@@ -45,5 +45,9 @@ This project is built using:
 ## 🤝 Contributing
 As researchers, we spend too much time formatting and not enough time discovering. Contributions to add more journal templates (Nature, Science, Elsevier) or better agentic review hooks are welcome!
 
+## 📬 Contact
+- **Email:** izzeldeenm@gmail.com
+- **GitHub:** [Marco9249](https://github.com/Marco9249)
+
 ---
 *Maintained by [Marco9249](https://github.com/Marco9249) - Bridging Deep Learning and Practical Automation.*
