@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academic AI Copilot — Automate Your Research Workflow</title>
+    <meta name="description" content="An open-source Python toolkit that automates academic writing, formatting, and peer-review simulation using AI Agents.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-card: #16161f;
+            --bg-card-hover: #1c1c28;
+            --accent-1: #6c5ce7;
+            --accent-2: #a29bfe;
+            --accent-3: #00cec9;
+            --accent-4: #fd79a8;
+            --text-primary: #e8e8f0;
+            --text-secondary: #9090a8;
+            --text-muted: #5a5a72;
+            --border: rgba(108, 92, 231, 0.15);
+            --glow: rgba(108, 92, 231, 0.3);
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        /* === ANIMATED BACKGROUND === */
+        .bg-grid {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-image:
+                linear-gradient(rgba(108, 92, 231, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(108, 92, 231, 0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .bg-glow-orb {
+            position: fixed; border-radius: 50%; filter: blur(120px);
+            pointer-events: none; z-index: 0;
+        }
+        .bg-glow-orb.orb-1 {
+            width: 500px; height: 500px; top: -100px; left: -100px;
+            background: rgba(108, 92, 231, 0.12);
+            animation: floatOrb 15s ease-in-out infinite;
+        }
+        .bg-glow-orb.orb-2 {
+            width: 400px; height: 400px; bottom: -50px; right: -50px;
+            background: rgba(0, 206, 201, 0.08);
+            animation: floatOrb 20s ease-in-out infinite reverse;
+        }
+        @keyframes floatOrb {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(60px, 40px); }
+        }
+
+        /* === NAVIGATION === */
+        nav {
+            position: fixed; top: 0; width: 100%; z-index: 100;
+            background: rgba(10, 10, 15, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 2rem;
+        }
+        .nav-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; align-items: center; justify-content: space-between;
+            height: 64px;
+        }
+        .nav-logo {
+            font-weight: 800; font-size: 1.15rem;
+            background: linear-gradient(135deg, var(--accent-2), var(--accent-3));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+        .nav-links { display: flex; gap: 2rem; list-style: none; }
+        .nav-links a {
+            color: var(--text-secondary); text-decoration: none;
+            font-size: 0.88rem; font-weight: 500;
+            transition: color 0.3s;
+        }
+        .nav-links a:hover { color: var(--accent-2); }
+
+        /* === HERO === */
+        .hero {
+            position: relative; z-index: 1;
+            min-height: 100vh; display: flex; align-items: center;
+            justify-content: center; text-align: center;
+            padding: 6rem 2rem 4rem;
+        }
+        .hero-content { max-width: 800px; }
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            padding: 0.4rem 1rem; border-radius: 50px;
+            background: rgba(108, 92, 231, 0.1);
+            border: 1px solid rgba(108, 92, 231, 0.25);
+            font-size: 0.8rem; color: var(--accent-2);
+            margin-bottom: 2rem; font-weight: 500;
+        }
+        .hero-badge .dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--accent-3);
+            animation: pulse-dot 2s ease-in-out infinite;
+        }
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.8); }
+        }
+        .hero h1 {
+            font-size: clamp(2.5rem, 6vw, 4.2rem);
+            font-weight: 900; line-height: 1.1;
+            letter-spacing: -2px; margin-bottom: 1.5rem;
+        }
+        .hero h1 .gradient-text {
+            background: linear-gradient(135deg, var(--accent-2), var(--accent-3), var(--accent-4));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .hero p {
+            font-size: 1.15rem; color: var(--text-secondary);
+            max-width: 600px; margin: 0 auto 2.5rem;
+            line-height: 1.8;
+        }
+        .hero-buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+        .btn {
+            padding: 0.85rem 2rem; border-radius: 12px;
+            font-size: 0.92rem; font-weight: 600;
+            text-decoration: none; cursor: pointer;
+            transition: all 0.3s ease; border: none;
+            font-family: 'Inter', sans-serif;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-1), #8b5cf6);
+            color: #fff;
+            box-shadow: 0 4px 24px rgba(108, 92, 231, 0.35);
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(108, 92, 231, 0.5);
+        }
+        .btn-secondary {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+        .btn-secondary:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--accent-2);
+            transform: translateY(-2px);
+        }
+
+        /* === SECTIONS === */
+        section {
+            position: relative; z-index: 1;
+            max-width: 1200px; margin: 0 auto;
+            padding: 5rem 2rem;
+        }
+        .section-label {
+            font-size: 0.78rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 3px;
+            color: var(--accent-3); margin-bottom: 1rem;
+        }
+        .section-title {
+            font-size: clamp(1.8rem, 4vw, 2.8rem);
+            font-weight: 800; letter-spacing: -1px;
+            margin-bottom: 1rem;
+        }
+        .section-desc {
+            font-size: 1.05rem; color: var(--text-secondary);
+            max-width: 600px; margin-bottom: 3rem;
+        }
+
+        /* === FEATURE CARDS === */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 1.5rem;
+        }
+        .feature-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 2.2rem;
+            transition: all 0.4s ease;
+            position: relative; overflow: hidden;
+        }
+        .feature-card::before {
+            content: ''; position: absolute; top: 0; left: 0;
+            width: 100%; height: 3px;
+            background: linear-gradient(90deg, var(--accent-1), var(--accent-3));
+            opacity: 0; transition: opacity 0.4s;
+        }
+        .feature-card:hover {
+            border-color: rgba(108, 92, 231, 0.3);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+        }
+        .feature-card:hover::before { opacity: 1; }
+
+        .feature-icon {
+            width: 52px; height: 52px; border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; margin-bottom: 1.2rem;
+        }
+        .feature-icon.purple { background: rgba(108, 92, 231, 0.12); }
+        .feature-icon.teal { background: rgba(0, 206, 201, 0.12); }
+        .feature-icon.pink { background: rgba(253, 121, 168, 0.12); }
+
+        .feature-card h3 {
+            font-size: 1.2rem; font-weight: 700;
+            margin-bottom: 0.7rem; letter-spacing: -0.3px;
+        }
+        .feature-card p {
+            color: var(--text-secondary); font-size: 0.92rem;
+            line-height: 1.7;
+        }
+        .feature-tag {
+            display: inline-block; margin-top: 1rem;
+            padding: 0.25rem 0.75rem; border-radius: 6px;
+            font-size: 0.75rem; font-weight: 600;
+            background: rgba(108, 92, 231, 0.1);
+            color: var(--accent-2);
+        }
+
+        /* === CODE DEMO === */
+        .demo-section { text-align: center; }
+        .code-window {
+            max-width: 700px; margin: 2rem auto 0;
+            background: #0d0d14;
+            border: 1px solid var(--border);
+            border-radius: 16px; overflow: hidden;
+            text-align: left;
+        }
+        .code-header {
+            display: flex; align-items: center; gap: 0.5rem;
+            padding: 0.8rem 1.2rem;
+            background: rgba(22, 22, 31, 0.8);
+            border-bottom: 1px solid var(--border);
+        }
+        .code-dot {
+            width: 10px; height: 10px; border-radius: 50%;
+        }
+        .code-dot.red { background: #ff5f57; }
+        .code-dot.yellow { background: #ffbd2e; }
+        .code-dot.green { background: #28c840; }
+        .code-title {
+            margin-left: 0.8rem; font-size: 0.78rem;
+            color: var(--text-muted); font-family: 'JetBrains Mono', monospace;
+        }
+        .code-body {
+            padding: 1.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.82rem; line-height: 2;
+            overflow-x: auto;
+        }
+        .code-body .comment { color: #5a5a72; }
+        .code-body .keyword { color: #c792ea; }
+        .code-body .function { color: #82aaff; }
+        .code-body .string { color: #c3e88d; }
+        .code-body .variable { color: #f78c6c; }
+        .code-body .operator { color: #89ddff; }
+
+        /* === PIPELINE SECTION === */
+        .pipeline-flow {
+            display: flex; align-items: center; justify-content: center;
+            gap: 0; flex-wrap: wrap; margin-top: 2rem;
+        }
+        .pipeline-step {
+            display: flex; flex-direction: column; align-items: center;
+            padding: 1.5rem 1.2rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            min-width: 160px;
+            transition: all 0.3s;
+        }
+        .pipeline-step:hover {
+            border-color: var(--accent-2);
+            transform: translateY(-3px);
+        }
+        .pipeline-step .step-num {
+            width: 32px; height: 32px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.8rem; font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-1), var(--accent-3));
+            color: #fff; margin-bottom: 0.8rem;
+        }
+        .pipeline-step h4 {
+            font-size: 0.88rem; font-weight: 700; margin-bottom: 0.3rem;
+        }
+        .pipeline-step p {
+            font-size: 0.75rem; color: var(--text-muted); text-align: center;
+        }
+        .pipeline-arrow {
+            font-size: 1.5rem; color: var(--text-muted);
+            padding: 0 0.5rem;
+        }
+
+        /* === STATS === */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem; margin-top: 3rem;
+        }
+        .stat-card {
+            text-align: center; padding: 2rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            transition: all 0.3s;
+        }
+        .stat-card:hover {
+            border-color: var(--accent-2);
+            transform: translateY(-2px);
+        }
+        .stat-number {
+            font-size: 2.5rem; font-weight: 900;
+            background: linear-gradient(135deg, var(--accent-2), var(--accent-3));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            margin-bottom: 0.3rem;
+        }
+        .stat-label {
+            font-size: 0.85rem; color: var(--text-secondary); font-weight: 500;
+        }
+
+        /* === FOOTER === */
+        footer {
+            position: relative; z-index: 1;
+            text-align: center; padding: 3rem 2rem;
+            border-top: 1px solid var(--border);
+            color: var(--text-muted); font-size: 0.85rem;
+        }
+        footer a {
+            color: var(--accent-2); text-decoration: none;
+        }
+
+        /* === RESPONSIVE === */
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .features-grid { grid-template-columns: 1fr; }
+            .pipeline-flow { flex-direction: column; }
+            .pipeline-arrow { transform: rotate(90deg); }
+            .hero h1 { font-size: 2.2rem; letter-spacing: -1px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-grid"></div>
+    <div class="bg-glow-orb orb-1"></div>
+    <div class="bg-glow-orb orb-2"></div>
+
+    <!-- NAV -->
+    <nav>
+        <div class="nav-inner">
+            <div class="nav-logo">Academic AI Copilot</div>
+            <ul class="nav-links">
+                <li><a href="#features">Features</a></li>
+                <li><a href="#pipeline">Pipeline</a></li>
+                <li><a href="#demo">Demo</a></li>
+                <li><a href="https://github.com/Marco9249/Academic-AI-Copilot" target="_blank">GitHub ↗</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <div class="hero">
+        <div class="hero-content">
+            <div class="hero-badge">
+                <span class="dot"></span>
+                Open Source &middot; Python &middot; AI Agents
+            </div>
+            <h1>
+                Stop Formatting.<br>
+                <span class="gradient-text">Start Discovering.</span>
+            </h1>
+            <p>
+                An autonomous AI toolkit that handles PDF extraction, IEEE/APA formatting,
+                and peer-review simulation — so you can focus on what matters: your research.
+            </p>
+            <div class="hero-buttons">
+                <a href="https://github.com/Marco9249/Academic-AI-Copilot" class="btn btn-primary" target="_blank">
+                    ⚡ Get Started
+                </a>
+                <a href="#demo" class="btn btn-secondary">
+                    View Demo →
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- FEATURES -->
+    <section id="features">
+        <div class="section-label">Core Tools</div>
+        <h2 class="section-title">Three Tools. Zero Wasted Hours.</h2>
+        <p class="section-desc">
+            Each tool is battle-tested on real IEEE journal submissions and arXiv papers.
+        </p>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon purple">📄</div>
+                <h3>pdf2md — PDF Extraction</h3>
+                <p>
+                    Converts complex multi-column academic PDFs into clean, LLM-optimized Markdown.
+                    Preserves tables, equations, and hierarchical structure with zero hallucination.
+                    Feed your papers directly into Claude, GPT-4, or Gemini.
+                </p>
+                <span class="feature-tag">PyMuPDF4LLM</span>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon teal">📝</div>
+                <h3>word_formatter — Auto Typesetting</h3>
+                <p>
+                    Programmatically generates perfectly formatted Word documents following strict
+                    IEEE and APA 7th edition standards. Handles OMML math equations, booktabs tables,
+                    and dynamic heading numbering automatically.
+                </p>
+                <span class="feature-tag">python-docx</span>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon pink">🔬</div>
+                <h3>SciWrite — Peer Review Agent</h3>
+                <p>
+                    A 5-pass automated review pipeline: clutter extraction, voice vitality analysis,
+                    sentence architecture audit, keyword consistency check, and citation integrity
+                    validation. Catches issues before reviewers do.
+                </p>
+                <span class="feature-tag">NLP + Regex Engine</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- PIPELINE -->
+    <section id="pipeline">
+        <div class="section-label">Workflow</div>
+        <h2 class="section-title">From Raw PDF to Submission-Ready</h2>
+        <p class="section-desc">
+            A fully automated pipeline that mirrors the real academic workflow.
+        </p>
+        <div class="pipeline-flow">
+            <div class="pipeline-step">
+                <div class="step-num">1</div>
+                <h4>Extract</h4>
+                <p>PDF → Markdown</p>
+            </div>
+            <div class="pipeline-arrow">→</div>
+            <div class="pipeline-step">
+                <div class="step-num">2</div>
+                <h4>Analyze</h4>
+                <p>LLM Context Load</p>
+            </div>
+            <div class="pipeline-arrow">→</div>
+            <div class="pipeline-step">
+                <div class="step-num">3</div>
+                <h4>Review</h4>
+                <p>5-Pass SciWrite Audit</p>
+            </div>
+            <div class="pipeline-arrow">→</div>
+            <div class="pipeline-step">
+                <div class="step-num">4</div>
+                <h4>Format</h4>
+                <p>IEEE / APA .docx</p>
+            </div>
+            <div class="pipeline-arrow">→</div>
+            <div class="pipeline-step">
+                <div class="step-num">5</div>
+                <h4>Submit</h4>
+                <p>Journal-Ready Paper</p>
+            </div>
+        </div>
+
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-number">95%</div>
+                <div class="stat-label">Formatting Time Saved</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">5</div>
+                <div class="stat-label">Automated Review Passes</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">0</div>
+                <div class="stat-label">Hallucinated References</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">3</div>
+                <div class="stat-label">Core Python Tools</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- DEMO -->
+    <section id="demo" class="demo-section">
+        <div class="section-label">Quick Start</div>
+        <h2 class="section-title">Up and Running in 30 Seconds</h2>
+        <p class="section-desc" style="margin-left:auto; margin-right:auto;">
+            Clone, install, and start automating your research workflow.
+        </p>
+        <div class="code-window">
+            <div class="code-header">
+                <span class="code-dot red"></span>
+                <span class="code-dot yellow"></span>
+                <span class="code-dot green"></span>
+                <span class="code-title">terminal</span>
+            </div>
+            <div class="code-body">
+                <span class="comment"># Clone the repository</span><br>
+                <span class="variable">$</span> git clone https://github.com/Marco9249/Academic-AI-Copilot.git<br>
+                <span class="variable">$</span> <span class="keyword">cd</span> Academic-AI-Copilot<br><br>
+                <span class="comment"># Install dependencies</span><br>
+                <span class="variable">$</span> pip install -r requirements.txt<br><br>
+                <span class="comment"># Convert a paper for LLM analysis</span><br>
+                <span class="variable">$</span> python tools/pdf2md.py <span class="string">paper.pdf</span> -o <span class="string">context.md</span><br><br>
+                <span class="comment"># Run the SciWrite peer-review audit</span><br>
+                <span class="variable">$</span> python tools/sciwrite_reviewer.py<br><br>
+                <span class="comment"># Generate a formatted IEEE Word document</span><br>
+                <span class="variable">$</span> python tools/word_formatter.py
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <p>
+            Built with 🧠 by <a href="https://github.com/Marco9249" target="_blank">Marco9249</a>
+            &middot; MIT License &middot; 2026
+        </p>
+    </footer>
+
+</body>
+</html>
